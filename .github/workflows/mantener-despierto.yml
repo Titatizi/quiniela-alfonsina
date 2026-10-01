@@ -1,0 +1,26 @@
+# Supabase duerme los proyectos gratis tras unos dias sin consultas, y
+# despertarlo requiere entrar al panel con la cuenta duena. Esta consulta
+# inofensiva cada dos dias evita que se duerma mientras la quiniela esta
+# abierta. No escribe nada: solo pregunta el estado.
+name: Mantener despierto
+
+on:
+  schedule:
+    - cron: "17 9 */2 * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Consultar el estado de la quiniela
+        run: |
+          respuesta=$(curl -sS -X POST \
+            -H 'Content-Type: application/json' \
+            -d '{"op":"estado"}' \
+            https://brikkfkcgyhuqkqhwsuy.supabase.co/functions/v1/quiniela)
+          echo "$respuesta"
+          echo "$respuesta" | grep -q '"total"' || {
+            echo "El servidor no contesto lo esperado." >&2
+            exit 1
+          }
