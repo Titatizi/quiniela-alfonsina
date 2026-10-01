@@ -154,26 +154,42 @@ textarea{font-family:var(--mono);font-size:13px;line-height:1.7;resize:vertical}
 
 .clock{cursor:grab}.clock.dragging{cursor:grabbing}
 
-.ruler{width:100%;max-width:320px;position:relative;height:88px;overflow:hidden;cursor:grab}
-.ruler.dragging{cursor:grabbing}
-.ruler-strip{position:absolute;top:24px;left:0;height:48px;display:flex;align-items:flex-start;will-change:transform}
-.ruler-strip span{width:8px;flex:0 0 8px;background:rgba(74,59,46,.22);height:13px;border-radius:2px}
-.ruler-strip span.maj{height:28px;background:rgba(74,59,46,.45)}
-.ruler-needle{position:absolute;left:50%;top:12px;bottom:10px;width:3px;transform:translateX(-50%);
-  background:var(--terracota);border-radius:2px;box-shadow:0 0 12px rgba(181,96,63,.5)}
-.ruler-needle::after{content:"";position:absolute;top:-9px;left:50%;transform:translateX(-50%);
-  border:7px solid transparent;border-top-color:var(--terracota)}
-.ruler-mask{position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(90deg,var(--papel),rgba(255,253,249,0) 17%,rgba(255,253,249,0) 83%,var(--papel))}
+/* ---------- la hora: la tarjeta es el cielo ---------- */
+.card{color:var(--tinta)}
+.card > *{position:relative;z-index:1}
+.card > .cielo{position:absolute;inset:0;z-index:0;border-radius:inherit;overflow:hidden;
+  pointer-events:none;opacity:0;transition:opacity .4s}
+.cielo i{position:absolute;width:2px;height:2px;border-radius:50%;background:#FFF8EF;
+  box-shadow:0 0 4px rgba(255,248,239,.8);animation:titila 2.6s ease-in-out infinite}
+@keyframes titila{0%,100%{opacity:.25}50%{opacity:1}}
 
-.tape{display:flex;align-items:flex-end;gap:16px;height:190px;cursor:ns-resize}
-.tape-track{position:relative;width:48px;height:100%;border-radius:10px;border:1px solid var(--linea-fuerte);
-  background:var(--fondo-2);overflow:hidden}
-.tape-fill{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(180deg,var(--camel-claro),var(--camel))}
-.tape-ticks{position:absolute;inset:0}
-.tape-ticks i{position:absolute;left:0;height:1px;background:rgba(74,59,46,.2)}
-.tape-ticks i.maj{background:rgba(74,59,46,.4)}
-.baby{width:74px;display:flex;align-items:flex-end;justify-content:center;height:100%}
+/* Sin esto, al dibujarse por primera vez las piezas animadas viajarian desde
+   la esquina hasta su lugar. */
+.sin-anim *{transition:none!important}
+
+/* ---------- el peso: balanza de platillos ---------- */
+.balanza{width:100%;max-width:300px;cursor:ns-resize;touch-action:none}
+.balanza svg{display:block;width:100%;height:auto;overflow:visible}
+.bal-brazo{transform-box:view-box;transform-origin:140px 62px;
+  transition:transform .65s cubic-bezier(.34,1.5,.64,1)}
+.bal-plato{transform-box:view-box;transform-origin:0 0;
+  transition:transform .65s cubic-bezier(.34,1.5,.64,1)}
+.bal-beba{transform-box:fill-box;transform-origin:50% 100%;
+  transition:transform .4s cubic-bezier(.34,1.6,.64,1)}
+
+/* ---------- la altura: el infantometro ---------- */
+.medidor{width:100%;max-width:330px;cursor:ew-resize;touch-action:none}
+.medidor svg{display:block;width:100%;height:auto;overflow:visible}
+.med-beba,.med-tope{transform-box:view-box;transform-origin:0 0;
+  transition:transform .5s cubic-bezier(.34,1.45,.64,1)}
+.med-panza{transform-box:fill-box;transform-origin:50% 100%;animation:respira 3.2s ease-in-out infinite}
+@keyframes respira{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.07)}}
+.med-ojo{transform-box:fill-box;transform-origin:50% 50%}
+.parpadea .med-ojo{animation:cierra .26s ease-in-out}
+@keyframes cierra{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.08)}}
+.med-piernas{transform-box:fill-box;transform-origin:0% 100%}
+.patalea .med-piernas{animation:patada .45s ease-in-out}
+@keyframes patada{0%,100%{transform:rotate(0)}30%{transform:rotate(-16deg)}65%{transform:rotate(8deg)}}
 
 .tapart{background:none;border:0;padding:0;line-height:0}
 .tapart:active{transform:scale(.96)}
@@ -188,9 +204,28 @@ textarea{font-family:var(--mono);font-size:13px;line-height:1.7;resize:vertical}
   border-color:var(--rosa-osc);transform:translateY(-5px);box-shadow:0 16px 30px -18px rgba(201,136,116,.9)}
 .door[aria-pressed=false]{opacity:.55}
 
-.hourbar{width:100%;max-width:330px;display:flex;gap:3px;height:70px;align-items:flex-end;cursor:pointer}
-.hourbar i{flex:1;border-radius:3px 3px 1px 1px;background:var(--fondo-3);transition:background .12s}
-.hourbar i.on{background:linear-gradient(180deg,var(--camel-claro),var(--camel-osc))}
+/* ---------- las horas de parto: reloj de arena ---------- */
+.arena{width:100%;max-width:180px;cursor:ns-resize;touch-action:none}
+.arena svg{display:block;width:100%;height:auto;overflow:visible}
+.arena-sup,.arena-inf{transform-box:fill-box;transform-origin:50% 100%;transition:transform .35s ease}
+.arena-chorro{stroke-dasharray:2 5;animation:cae .45s linear infinite;transition:opacity .2s}
+@keyframes cae{to{stroke-dashoffset:-7}}
+.arena-marco{transform-box:view-box;transform-origin:80px 110px}
+.sacude .arena-marco{animation:sacude .42s ease-in-out}
+@keyframes sacude{0%,100%{transform:rotate(0)}30%{transform:rotate(-3.5deg)}70%{transform:rotate(2.5deg)}}
+
+/* ---------- los ojos: una carita ---------- */
+.carita{max-width:100%}
+.carita svg{display:block;max-width:100%;height:auto}
+.parpado{transform-box:fill-box;transform-origin:50% 0;transform:scaleY(.03)}
+.parpadea .parpado{animation:parpadeo .26s ease-in-out}
+@keyframes parpadeo{0%,100%{transform:scaleY(.03)}45%,55%{transform:scaleY(1)}}
+.mirada{transition:transform .2s ease-out}
+.iris{transition:fill .3s ease}
+.swatches{display:flex;gap:12px;justify-content:center}
+.swatches button{width:28px;height:28px;border-radius:50%;padding:0;border:2px solid var(--papel);
+  box-shadow:0 0 0 1px var(--linea-fuerte);transition:transform .18s cubic-bezier(.3,1.5,.5,1)}
+.swatches button[aria-pressed=true]{transform:scale(1.2);box-shadow:0 0 0 2px var(--terracota)}
 
 .blood{display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;max-width:330px}
 .bloodgroups{display:flex;gap:7px;width:100%}
@@ -663,6 +698,41 @@ function dragTrack(node,o){
 }
 
 /* ===================== las apuestas ===================== */
+/* ---------- dibujo y color ---------- */
+var SVGNS="http://www.w3.org/2000/svg";
+function svgEl(tag, attrs){
+  var n=document.createElementNS(SVGNS,tag);
+  for(var k in attrs) n.setAttribute(k,attrs[k]);
+  return n;
+}
+function hexRgb(h){ return [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)]; }
+function mix(a,b,t){ return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t]; }
+function rgb(c){ return "rgb("+Math.round(c[0])+","+Math.round(c[1])+","+Math.round(c[2])+")"; }
+function suave(t){ t=clamp(t,0,1); return t*t*(3-2*t); }
+
+// El cielo de la tarjeta de la hora. Amanece de 05:00 a 07:30 y anochece de
+// 19:00 a 20:30. 0 es pleno dia, 1 es noche cerrada.
+function oscuridad(m){
+  if(m<300)  return 1;
+  if(m<450)  return 1-suave((m-300)/150);
+  if(m<1140) return 0;
+  if(m<1230) return suave((m-1140)/90);
+  return 1;
+}
+// El resplandor durazno de horizonte: maximo a mitad del amanecer o del ocaso.
+function resplandor(m){
+  if(m>=300 && m<450)   return Math.sin(Math.PI*(m-300)/150);
+  if(m>=1140 && m<1230) return Math.sin(Math.PI*(m-1140)/90);
+  return 0;
+}
+
+/** Hace parpadear (o patalear) un dibujo reiniciando su animacion CSS. */
+function relanzar(nodo, clase){
+  nodo.classList.remove(clase);
+  nodo.getBoundingClientRect();
+  nodo.classList.add(clase);
+}
+
 var Q = [
 {
   id:"fecha", title:"¿Qué día nace?",
@@ -715,59 +785,71 @@ var Q = [
   short:function(v){ return hhmm(v)+" hs"; },
   score:function(g,r){ var d=Math.abs(g-r); d=Math.min(d,1440-d); return Math.max(0,Math.round(100*(1-d/360))); },
   build:function(stage,get,set){
-    var NS="http://www.w3.org/2000/svg";
-    var svg=document.createElementNS(NS,"svg");
-    svg.setAttribute("viewBox","0 0 260 260"); svg.setAttribute("width","215"); svg.setAttribute("height","215");
-    svg.setAttribute("class","clock"); svg.style.maxWidth="100%";
+    var tarjeta=stage.parentNode;
+
+    var cielo=el("div","cielo");
+    for(var s=0;s<28;s++){
+      var st=el("i");
+      st.style.left=(4+Math.random()*92)+"%";
+      st.style.top=(3+Math.random()*55)+"%";
+      if(Math.random()<.25){ st.style.width="3px"; st.style.height="3px"; }
+      st.style.animationDelay=(Math.random()*2.6).toFixed(2)+"s";
+      cielo.appendChild(st);
+    }
+    tarjeta.insertBefore(cielo,tarjeta.firstChild);
+
+    var svg=svgEl("svg",{viewBox:"0 0 260 260",width:"215",height:"215","class":"clock"});
+    svg.style.maxWidth="100%";
     var cx=130,cy=130,R=96;
-    var ring=document.createElementNS(NS,"circle");
-    ring.setAttribute("cx",cx); ring.setAttribute("cy",cy); ring.setAttribute("r",R);
-    ring.setAttribute("fill","rgba(243,234,220,.9)");
-    ring.setAttribute("stroke","rgba(74,59,46,.22)"); ring.setAttribute("stroke-width","2");
-    svg.appendChild(ring);
-    for(var h=0;h<24;h++){
-      var a=h/24*Math.PI*2, maj=(h%6===0);
+    svg.appendChild(svgEl("circle",{cx:cx,cy:cy,r:R,fill:"rgba(243,234,220,.94)",stroke:"rgba(74,59,46,.22)","stroke-width":2}));
+    for(var hr=0;hr<24;hr++){
+      var a=hr/24*Math.PI*2, maj=(hr%6===0);
       var r1=R-(maj?15:8), r2=R-2;
-      var ln=document.createElementNS(NS,"line");
-      ln.setAttribute("x1",cx+r1*Math.sin(a)); ln.setAttribute("y1",cy-r1*Math.cos(a));
-      ln.setAttribute("x2",cx+r2*Math.sin(a)); ln.setAttribute("y2",cy-r2*Math.cos(a));
-      ln.setAttribute("stroke",maj?"#9A7B57":"rgba(74,59,46,.22)");
-      ln.setAttribute("stroke-width",maj?"3":"1.5"); ln.setAttribute("stroke-linecap","round");
-      svg.appendChild(ln);
+      svg.appendChild(svgEl("line",{x1:cx+r1*Math.sin(a),y1:cy-r1*Math.cos(a),x2:cx+r2*Math.sin(a),y2:cy-r2*Math.cos(a),
+        stroke:maj?"#9A7B57":"rgba(74,59,46,.22)","stroke-width":maj?3:1.5,"stroke-linecap":"round"}));
       if(maj){
-        var rt=R-30, t=document.createElementNS(NS,"text");
-        t.setAttribute("x",cx+rt*Math.sin(a)); t.setAttribute("y",cy-rt*Math.cos(a)+4);
-        t.setAttribute("text-anchor","middle"); t.setAttribute("fill","rgba(74,59,46,.5)");
-        t.setAttribute("font-size","12"); t.setAttribute("font-family","Space Mono, monospace");
-        t.textContent=pad(h); svg.appendChild(t);
+        var rt=R-30;
+        var tx=svgEl("text",{x:cx+rt*Math.sin(a),y:cy-rt*Math.cos(a)+4,"text-anchor":"middle",
+          fill:"rgba(74,59,46,.5)","font-size":12,"font-family":"Space Mono, monospace"});
+        tx.textContent=pad(hr); svg.appendChild(tx);
       }
     }
-    var hand=document.createElementNS(NS,"line");
-    hand.setAttribute("x1",cx); hand.setAttribute("y1",cy);
-    hand.setAttribute("stroke","#B5603F"); hand.setAttribute("stroke-width","4"); hand.setAttribute("stroke-linecap","round");
-    svg.appendChild(hand);
-    var knob=document.createElementNS(NS,"circle");
-    knob.setAttribute("r","17"); knob.setAttribute("fill","#BE9A72");
-    knob.setAttribute("stroke","#FFFDF9"); knob.setAttribute("stroke-width","2");
-    svg.appendChild(knob);
-    var icon=document.createElementNS(NS,"text");
-    icon.setAttribute("text-anchor","middle"); icon.setAttribute("font-size","19");
-    svg.appendChild(icon);
-    var mid=document.createElementNS(NS,"text");
-    mid.setAttribute("x",cx); mid.setAttribute("y",cy+9); mid.setAttribute("text-anchor","middle");
-    mid.setAttribute("fill","#4A3B2E"); mid.setAttribute("font-size","26");
-    mid.setAttribute("font-family","Space Mono, monospace"); mid.setAttribute("font-weight","700");
-    svg.appendChild(mid);
+    var aguja=svgEl("line",{x1:cx,y1:cy,stroke:"#B5603F","stroke-width":4,"stroke-linecap":"round"});
+    var perilla=svgEl("circle",{r:17,stroke:"#FFFDF9","stroke-width":2});
+    var icono=svgEl("text",{"text-anchor":"middle","font-size":19});
+    var centro=svgEl("text",{x:cx,y:cy+9,"text-anchor":"middle",fill:"#4A3B2E","font-size":26,
+      "font-family":"Space Mono, monospace","font-weight":700});
+    svg.appendChild(aguja); svg.appendChild(perilla); svg.appendChild(icono); svg.appendChild(centro);
     stage.appendChild(svg);
+
+    var DIA=hexRgb("#FFFDF9"), NOCHE_ARR=hexRgb("#1D2140"), NOCHE_ABA=hexRgb("#3B3459"),
+        ALBA_ARR=hexRgb("#9C86B4"), ALBA_ABA=hexRgb("#F3AE8E");
+    var TINTA=[hexRgb("#4A3B2E"),hexRgb("#F6EEE6")], TINTA2=[hexRgb("#8B7A66"),hexRgb("#C7BFD8")],
+        CAMEL=[hexRgb("#9A7B57"),hexRgb("#F1C98A")];
+    function pintarCielo(m){
+      var d=oscuridad(m), g=resplandor(m);
+      var arriba=mix(mix(DIA,NOCHE_ARR,d),ALBA_ARR,g*.5);
+      var abajo =mix(mix(DIA,NOCHE_ABA,d),ALBA_ABA,g*.75);
+      tarjeta.style.background="linear-gradient(180deg,"+rgb(arriba)+","+rgb(abajo)+")";
+      tarjeta.style.borderColor = d>.5 ? "rgba(255,248,239,.16)" : "";
+      tarjeta.style.setProperty("--tinta",rgb(mix(TINTA[0],TINTA[1],d)));
+      tarjeta.style.setProperty("--tinta-2",rgb(mix(TINTA2[0],TINTA2[1],d)));
+      tarjeta.style.setProperty("--camel-osc",rgb(mix(CAMEL[0],CAMEL[1],d)));
+      cielo.style.opacity=String(clamp((d-.45)/.55,0,1));
+      return d;
+    }
+
     function draw(){
       var v=get(), a=v/1440*Math.PI*2;
       var kx=cx+(R-30)*Math.sin(a), ky=cy-(R-30)*Math.cos(a);
-      hand.setAttribute("x2",cx+(R-46)*Math.sin(a)); hand.setAttribute("y2",cy-(R-46)*Math.cos(a));
-      knob.setAttribute("cx",kx); knob.setAttribute("cy",ky);
-      icon.setAttribute("x",kx); icon.setAttribute("y",ky+7);
-      var h=Math.floor(v/60);
-      icon.textContent=(h>=6&&h<20)?"☀":"☾";
-      mid.textContent=hhmm(v);
+      aguja.setAttribute("x2",cx+(R-46)*Math.sin(a));
+      aguja.setAttribute("y2",cy-(R-46)*Math.cos(a));
+      perilla.setAttribute("cx",kx); perilla.setAttribute("cy",ky);
+      icono.setAttribute("x",kx); icono.setAttribute("y",ky+7);
+      var noche=pintarCielo(v)>.5;
+      icono.textContent=noche?"☾":"☀";
+      perilla.setAttribute("fill",noche?"#E4E1F1":"#E9B95C");
+      centro.textContent=hhmm(v);
     }
     var on=false;
     function fromEvent(e){
@@ -791,111 +873,257 @@ var Q = [
 },
 {
   id:"peso", title:"¿Cuánto va a pesar?",
-  sub:"Arrastrá la balanza.",
+  sub:"Bajá el plato de la beba para sumar peso.",
   init:function(){ return 3200; },
   label:function(v){ return (v/1000).toFixed(3).replace(".",",")+" kg"; },
   short:function(v){ return (v/1000).toFixed(3).replace(".",",")+" kg"; },
   score:function(g,r){ return Math.max(0,Math.round(100*(1-Math.abs(g-r)/900))); },
   build:function(stage,get,set){
-    var MIN=1800,MAX=5400,PX=0.42;
-    var wrap=el("div","ruler"), strip=el("div","ruler-strip");
-    for(var g=MIN;g<=MAX;g+=20){ var s=el("span"); if(g%200===0) s.className="maj"; strip.appendChild(s); }
-    wrap.appendChild(strip); wrap.appendChild(el("div","ruler-needle")); wrap.appendChild(el("div","ruler-mask"));
-    stage.appendChild(wrap);
-    stage.appendChild(el("p","hintline","← más pesada    ·    más liviana →"));
-    function draw(){
-      var w=wrap.clientWidth||300;
-      strip.style.transform="translateX("+(w/2-(get()-MIN)*PX)+"px)";
+    var MIN=1800, MAX=5400, PIVX=140, PIVY=62, BRAZO=90;
+    var wrap=el("div","balanza sin-anim");
+    var svg=svgEl("svg",{viewBox:"0 0 280 216"});
+
+    // pie y columna
+    svg.appendChild(svgEl("path",{d:"M100 208 L180 208 L168 192 L112 192 Z",fill:"#9A7B57"}));
+    svg.appendChild(svgEl("rect",{x:135,y:60,width:10,height:134,rx:4,fill:"#B08E68"}));
+    // el cuadrante que marca la aguja
+    for(var k=-3;k<=3;k++){
+      var aa=k*10*Math.PI/180, ri=(k===0?29:33);
+      svg.appendChild(svgEl("line",{x1:PIVX+38*Math.sin(aa),y1:PIVY-38*Math.cos(aa),
+        x2:PIVX+ri*Math.sin(aa),y2:PIVY-ri*Math.cos(aa),
+        stroke:"rgba(74,59,46,.4)","stroke-width":k===0?2:1.2,"stroke-linecap":"round"}));
     }
-    dragDelta(wrap,{axis:"x",per:-1/PX,step:10,min:MIN,max:MAX,get:get,set:function(v){ set(v); draw(); }});
-    if(window.ResizeObserver) new ResizeObserver(draw).observe(wrap);
-    setTimeout(draw,0); draw();
+
+    // un plato colgado de su gancho; lo que lleva va antes que la fuente,
+    // asi parece apoyado adentro
+    function plato(carga){
+      var g=svgEl("g",{"class":"bal-plato"});
+      g.appendChild(svgEl("line",{x1:0,y1:0,x2:-30,y2:60,stroke:"rgba(74,59,46,.45)","stroke-width":1.4}));
+      g.appendChild(svgEl("line",{x1:0,y1:0,x2:30,y2:60,stroke:"rgba(74,59,46,.45)","stroke-width":1.4}));
+      g.appendChild(carga);
+      g.appendChild(svgEl("path",{d:"M-40 60 Q0 86 40 60 Z",fill:"#DCC6A8",stroke:"#B08E68","stroke-width":1.5}));
+      g.appendChild(svgEl("circle",{cx:0,cy:0,r:3.5,fill:"#6F5640"}));
+      return g;
+    }
+
+    var beba=svgEl("g",{"class":"bal-beba"});
+    beba.appendChild(svgEl("ellipse",{cx:4,cy:52,rx:21,ry:11,fill:"#E3AFA0"}));
+    beba.appendChild(svgEl("path",{d:"M-6 52 Q4 46 14 52",fill:"none",stroke:"#C98874","stroke-width":1.6,opacity:".7"}));
+    beba.appendChild(svgEl("circle",{cx:-15,cy:46,r:10,fill:"#F2DCC4"}));
+    beba.appendChild(svgEl("path",{d:"M-19 45 Q-16 48 -13 45",fill:"none",stroke:"#6F5640","stroke-width":1.6,"stroke-linecap":"round"}));
+    beba.appendChild(svgEl("path",{d:"M-21 38 C-24 32 -14 30 -15 36",fill:"none",stroke:"#8A6B4F","stroke-width":2,"stroke-linecap":"round"}));
+
+    var pesa=svgEl("g",{});
+    pesa.appendChild(svgEl("path",{d:"M-15 61 L15 61 L11 38 L-11 38 Z",fill:"#D2A355"}));
+    pesa.appendChild(svgEl("rect",{x:-4,y:30,width:8,height:9,rx:3,fill:"#B98A3F"}));
+    pesa.appendChild(svgEl("path",{d:"M-7 44 L-5 56",stroke:"rgba(255,255,255,.55)","stroke-width":2,"stroke-linecap":"round"}));
+
+    var platoBeba=plato(beba), platoPesa=plato(pesa);
+    svg.appendChild(platoBeba); svg.appendChild(platoPesa);
+
+    var brazo=svgEl("g",{"class":"bal-brazo"});
+    brazo.appendChild(svgEl("rect",{x:46,y:58,width:188,height:8,rx:4,fill:"#9A7B57"}));
+    brazo.appendChild(svgEl("circle",{cx:50,cy:62,r:4,fill:"#6F5640"}));
+    brazo.appendChild(svgEl("circle",{cx:230,cy:62,r:4,fill:"#6F5640"}));
+    brazo.appendChild(svgEl("path",{d:"M137 62 L140 24 L143 62 Z",fill:"#B5603F"}));
+    svg.appendChild(brazo);
+    svg.appendChild(svgEl("circle",{cx:PIVX,cy:PIVY,r:7,fill:"#6F5640"}));
+    svg.appendChild(svgEl("circle",{cx:PIVX,cy:PIVY,r:2.5,fill:"#DCC6A8"}));
+
+    wrap.appendChild(svg);
+    stage.appendChild(wrap);
+
+    // La pesa del otro plato equivale a 3,5 kg: por encima de eso la beba baja,
+    // por debajo sube. Hasta 14 grados de inclinacion en los extremos.
+    function draw(){
+      var w=get();
+      var t=clamp((w-3500)/1800,-1,1);
+      var ang=t*14*Math.PI/180;
+      brazo.style.transform="rotate("+(-t*14)+"deg)";
+      platoBeba.style.transform="translate("+(PIVX-BRAZO*Math.cos(ang))+"px,"+(PIVY+BRAZO*Math.sin(ang))+"px)";
+      platoPesa.style.transform="translate("+(PIVX+BRAZO*Math.cos(ang))+"px,"+(PIVY-BRAZO*Math.sin(ang))+"px)";
+      beba.style.transform="scale("+(0.8+(w-MIN)/(MAX-MIN)*0.45)+")";
+    }
+    dragDelta(wrap,{axis:"y",per:-14,step:10,min:MIN,max:MAX,get:get,set:function(v){ set(v); draw(); }});
+    draw();
+    setTimeout(function(){ wrap.classList.remove("sin-anim"); },60);
   }
 },
 {
   id:"ojos", title:"¿De qué color los ojos?",
-  sub:"Tocá para cambiar.",
+  sub:"Tocá la carita o un color.",
   init:function(){ return 0; },
   label:function(v){ return OJOS[v]; },
   short:function(v){ return OJOS[v]; },
   score:function(g,r){ return g===r?100:0; },
   build:function(stage,get,set){
-    var NS="http://www.w3.org/2000/svg";
-    var btn=el("button","tapart"); btn.type="button";
-    btn.setAttribute("aria-label","Cambiar el color de ojos");
-    var svg=document.createElementNS(NS,"svg");
-    svg.setAttribute("viewBox","0 0 240 120"); svg.setAttribute("width","240"); svg.style.maxWidth="100%";
-    function eye(cx){
-      var g=document.createElementNS(NS,"g");
-      var white=document.createElementNS(NS,"ellipse");
-      white.setAttribute("cx",cx); white.setAttribute("cy",60);
-      white.setAttribute("rx",46); white.setAttribute("ry",32); white.setAttribute("fill","#FFFDF9");
-      var iris=document.createElementNS(NS,"circle");
-      iris.setAttribute("cx",cx); iris.setAttribute("cy",60); iris.setAttribute("r",24);
-      iris.style.transition="fill .3s ease";
-      var pup=document.createElementNS(NS,"circle");
-      pup.setAttribute("cx",cx); pup.setAttribute("cy",60); pup.setAttribute("r",10); pup.setAttribute("fill","#4A3B2E");
-      var sh=document.createElementNS(NS,"circle");
-      sh.setAttribute("cx",cx-9); sh.setAttribute("cy",51); sh.setAttribute("r",6);
-      sh.setAttribute("fill","#FFFFFF"); sh.setAttribute("opacity",".85");
-      var lid=document.createElementNS(NS,"path");
-      lid.setAttribute("d","M"+(cx-48)+" 60 Q"+cx+" 16 "+(cx+48)+" 60");
-      lid.setAttribute("stroke","#9A7B57"); lid.setAttribute("stroke-width","5");
-      lid.setAttribute("fill","none"); lid.setAttribute("stroke-linecap","round");
-      g.appendChild(white); g.appendChild(iris); g.appendChild(pup); g.appendChild(sh); g.appendChild(lid);
-      svg.appendChild(g); return iris;
-    }
-    var i1=eye(64), i2=eye(176);
-    btn.appendChild(svg); stage.appendChild(btn);
-    var nm=el("p","hintline",""); stage.appendChild(nm);
+    var PIEL="#F2DCC4";
+    var cara=el("button","tapart carita"); cara.type="button";
+    cara.setAttribute("aria-label","Cambiar el color de ojos");
+    var svg=svgEl("svg",{viewBox:"0 0 240 190",width:"236"});
+
+    svg.appendChild(svgEl("ellipse",{cx:120,cy:106,rx:96,ry:80,fill:PIEL}));
+    svg.appendChild(svgEl("path",{d:"M112 30 C 98 12, 130 4, 128 22 C 127 32, 112 32, 115 23",
+      fill:"none",stroke:"#8A6B4F","stroke-width":5,"stroke-linecap":"round"}));
+    [62,178].forEach(function(x){
+      svg.appendChild(svgEl("ellipse",{cx:x,cy:134,rx:17,ry:10,fill:"#E3AFA0",opacity:".6"}));
+    });
+    svg.appendChild(svgEl("ellipse",{cx:120,cy:128,rx:6,ry:4,fill:"#E2BFA3"}));
+    svg.appendChild(svgEl("path",{d:"M104 148 Q120 162 136 148",fill:"none",stroke:"#C98874","stroke-width":5,"stroke-linecap":"round"}));
+
+    var irises=[], miradas=[];
+    [80,160].forEach(function(x){
+      var y=98;
+      svg.appendChild(svgEl("ellipse",{cx:x,cy:y,rx:26,ry:24,fill:"#FFFDF9"}));
+      var mir=svgEl("g",{"class":"mirada"});
+      var iris=svgEl("circle",{cx:x,cy:y,r:15,"class":"iris"});
+      mir.appendChild(iris);
+      mir.appendChild(svgEl("circle",{cx:x,cy:y,r:7,fill:"#2E241C"}));
+      mir.appendChild(svgEl("circle",{cx:x-5,cy:y-6,r:4.5,fill:"#FFFFFF",opacity:".92"}));
+      mir.appendChild(svgEl("circle",{cx:x+5,cy:y+5,r:2,fill:"#FFFFFF",opacity:".7"}));
+      svg.appendChild(mir);
+      // el parpado baja sobre el ojo; arriba quedan la linea y las pestanas,
+      // asi cerrado se lee como un ojito dormido
+      svg.appendChild(svgEl("ellipse",{cx:x,cy:y,rx:28,ry:26,fill:PIEL,"class":"parpado"}));
+      svg.appendChild(svgEl("path",{d:"M"+(x-27)+" "+y+" Q"+x+" "+(y-34)+" "+(x+27)+" "+y,
+        fill:"none",stroke:"#6F5640","stroke-width":3.5,"stroke-linecap":"round"}));
+      [[-16,-18,-22,-27],[0,-23,0,-33],[16,-18,22,-27]].forEach(function(p){
+        svg.appendChild(svgEl("line",{x1:x+p[0],y1:y+p[1],x2:x+p[2],y2:y+p[3],
+          stroke:"#6F5640","stroke-width":2.6,"stroke-linecap":"round"}));
+      });
+      irises.push(iris); miradas.push(mir);
+    });
+    cara.appendChild(svg);
+    stage.appendChild(cara);
+
+    var muestras=el("div","swatches");
+    var botones=OJOS_C.map(function(c,i){
+      var b=el("button"); b.type="button"; b.style.background=c;
+      b.setAttribute("aria-label",OJOS[i]);
+      b.addEventListener("click",function(){ cambiarA(i); });
+      muestras.appendChild(b); return b;
+    });
+    stage.appendChild(muestras);
+
     function draw(){
-      var c=OJOS_C[get()];
-      i1.setAttribute("fill",c); i2.setAttribute("fill",c);
-      nm.textContent=(get()+1)+" de "+OJOS.length;
+      irises.forEach(function(ir){ ir.setAttribute("fill",OJOS_C[get()]); });
+      botones.forEach(function(b,i){ b.setAttribute("aria-pressed",String(i===get())); });
     }
-    btn.addEventListener("click",function(){ set((get()+1)%OJOS.length); draw(); });
+    // El color cambia a mitad del parpadeo, con el ojo cerrado.
+    function cambiarA(i){
+      relanzar(svg,"parpadea");
+      setTimeout(function(){ set(i); draw(); },120);
+    }
+    cara.addEventListener("click",function(){ cambiarA((get()+1)%OJOS.length); });
+
+    function mirar(dx,dy){ miradas.forEach(function(m){ m.style.transform="translate("+dx+"px,"+dy+"px)"; }); }
+    var ultimoDedo=0;
+    function seguir(e){
+      var r=svg.getBoundingClientRect(); if(!r.width) return;
+      var dx=e.clientX-(r.left+r.width/2), dy=e.clientY-(r.top+r.height*.52);
+      var largo=Math.hypot(dx,dy)||1, k=Math.min(1,largo/140);
+      mirar(dx/largo*7*k, dy/largo*6*k);
+      ultimoDedo=Date.now();
+    }
+    document.addEventListener("pointermove",seguir);
+    document.addEventListener("pointerdown",seguir);
+
+    // Parpadea sola cada tanto y, si nadie la mira, mira para otro lado.
+    var vivo=true, reloj=null;
+    function ciclo(){
+      if(!vivo) return;
+      relanzar(svg,"parpadea");
+      if(Date.now()-ultimoDedo>2500) mirar(Math.random()*12-6, Math.random()*8-4);
+      reloj=setTimeout(ciclo, 2200+Math.random()*2600);
+    }
+    reloj=setTimeout(ciclo,1100);
+
     draw();
+    return function(){
+      vivo=false; clearTimeout(reloj);
+      document.removeEventListener("pointermove",seguir);
+      document.removeEventListener("pointerdown",seguir);
+    };
   }
 },
 {
   id:"altura", title:"¿Cuánto va a medir?",
-  sub:"Estirá la cinta.",
+  sub:"Corré el tope hasta sus pies.",
   init:function(){ return 49; },
   label:function(v){ return v+" cm"; },
   short:function(v){ return v+" cm"; },
   score:function(g,r){ return Math.max(0,Math.round(100*(1-Math.abs(g-r)/9))); },
   build:function(stage,get,set){
-    var MIN=40,MAX=58;
-    var tape=el("div","tape"), track=el("div","tape-track");
-    var fill=el("div","tape-fill"), ticks=el("div","tape-ticks");
-    for(var c=MIN;c<=MAX;c++){
-      var i=el("i"); if(c%5===0) i.className="maj";
-      i.style.bottom=((c-MIN)/(MAX-MIN)*100)+"%";
-      i.style.width=(c%5===0)?"100%":"52%";
-      ticks.appendChild(i);
+    // Un infantometro: a los recien nacidos se los mide acostados. La regla
+    // es lineal desde el cabezal (0 cm) y la beba escala parejo con el largo.
+    var MIN=40, MAX=58, PXCM=4.3, X0=30, LARGO_DIBUJO=236;
+    var wrap=el("div","medidor sin-anim");
+    var svg=svgEl("svg",{viewBox:"0 0 300 138"});
+
+    svg.appendChild(svgEl("rect",{x:12,y:100,width:282,height:22,rx:7,fill:"#F3EADC",stroke:"#DCC6A8"}));
+    for(var c=0;c<=60;c++){
+      var x=X0+c*PXCM, mayor=(c%5===0), util=(c>=MIN);
+      svg.appendChild(svgEl("line",{x1:x,y1:122,x2:x,y2:mayor?111:116,
+        stroke:util?"rgba(74,59,46,.5)":"rgba(74,59,46,.16)","stroke-width":mayor?1.4:1}));
+      if(mayor && util){
+        var t=svgEl("text",{x:x,y:134,"text-anchor":"middle",fill:"rgba(74,59,46,.6)",
+          "font-size":9,"font-family":"Space Mono, monospace"});
+        t.textContent=String(c); svg.appendChild(t);
+      }
     }
-    track.appendChild(fill); track.appendChild(ticks);
-    var baby=el("div","baby");
-    var NS="http://www.w3.org/2000/svg";
-    var bs=document.createElementNS(NS,"svg");
-    bs.setAttribute("viewBox","0 0 60 120"); bs.setAttribute("width","66");
-    bs.innerHTML='<ellipse cx="30" cy="20" rx="17" ry="17" fill="#F2DCC4"/>'+
-      '<path d="M14 12 Q30 -2 46 12 Q38 6 30 7 Q22 6 14 12Z" fill="#8A6B4F"/>'+
-      '<circle cx="24" cy="21" r="2.2" fill="#4A3B2E"/><circle cx="36" cy="21" r="2.2" fill="#4A3B2E"/>'+
-      '<path d="M26 27 Q30 30 34 27" stroke="#C98874" stroke-width="2" fill="none" stroke-linecap="round"/>'+
-      '<rect x="16" y="36" width="28" height="60" rx="14" fill="#E3AFA0"/>'+
-      '<circle cx="30" cy="46" r="3" fill="#FFFDF9" opacity=".7"/>';
-    bs.style.transformOrigin="50% 100%";
-    baby.appendChild(bs);
-    tape.appendChild(track); tape.appendChild(baby);
-    stage.appendChild(tape);
+    svg.appendChild(svgEl("rect",{x:18,y:44,width:12,height:78,rx:4,fill:"#B08E68"}));
+
+    // la beba, de costado y boca arriba; su base (y=0) apoya en la colchoneta
+    var beba=svgEl("g",{"class":"med-beba"});
+    var piernas=svgEl("g",{"class":"med-piernas"});
+    piernas.appendChild(svgEl("rect",{x:184,y:-28,width:40,height:15,rx:7.5,fill:"#E3AFA0"}));
+    piernas.appendChild(svgEl("ellipse",{cx:228,cy:-21,rx:9,ry:7.5,fill:"#F2DCC4"}));
+    beba.appendChild(piernas);
+    beba.appendChild(svgEl("rect",{x:44,y:-34,width:150,height:34,rx:17,fill:"#E3AFA0","class":"med-panza"}));
+    beba.appendChild(svgEl("circle",{cx:120,cy:-17,r:2.6,fill:"#FFFDF9",opacity:".85"}));
+    beba.appendChild(svgEl("circle",{cx:134,cy:-17,r:2.6,fill:"#FFFDF9",opacity:".85"}));
+    beba.appendChild(svgEl("rect",{x:70,y:-48,width:36,height:12,rx:6,fill:"#E3AFA0",transform:"rotate(-18 70 -42)"}));
+    beba.appendChild(svgEl("circle",{cx:105,cy:-54,r:6.5,fill:"#F2DCC4"}));
+    beba.appendChild(svgEl("circle",{cx:26,cy:-26,r:26,fill:"#F2DCC4"}));
+    beba.appendChild(svgEl("path",{d:"M10 -46 C4 -58 22 -62 22 -52",fill:"none",stroke:"#8A6B4F","stroke-width":4,"stroke-linecap":"round"}));
+    beba.appendChild(svgEl("ellipse",{cx:38,cy:-16,rx:6,ry:4,fill:"#E3AFA0",opacity:".6"}));
+    beba.appendChild(svgEl("ellipse",{cx:34,cy:-30,rx:3,ry:3.8,fill:"#4A3B2E","class":"med-ojo"}));
+    beba.appendChild(svgEl("path",{d:"M40 -12 Q45 -7 50 -12",fill:"none",stroke:"#C98874","stroke-width":2.4,"stroke-linecap":"round"}));
+    svg.appendChild(beba);
+
+    var tope=svgEl("g",{"class":"med-tope"});
+    tope.appendChild(svgEl("rect",{x:-5,y:44,width:10,height:78,rx:4,fill:"#BE9A72"}));
+    tope.appendChild(svgEl("rect",{x:-3,y:35,width:6,height:11,rx:3,fill:"#9A7B57"}));
+    svg.appendChild(tope);
+
+    wrap.appendChild(svg);
+    stage.appendChild(wrap);
+
+    var ultimo=get(), tPatada=null;
     function draw(){
-      var t=(get()-MIN)/(MAX-MIN);
-      fill.style.height=(12+t*88)+"%";
-      bs.style.transform="scale("+(0.6+t*0.4)+")";
+      var cm=get();
+      beba.style.transform="translate("+X0+"px,100px) scale("+(cm*PXCM/LARGO_DIBUJO)+")";
+      tope.style.transform="translate("+(X0+cm*PXCM)+"px,0px)";
+      if(cm!==ultimo){
+        ultimo=cm;
+        relanzar(svg,"patalea");
+        clearTimeout(tPatada);
+        tPatada=setTimeout(function(){ svg.classList.remove("patalea"); },470);
+      }
     }
-    dragDelta(tape,{axis:"y",per:1/8,step:1,min:MIN,max:MAX,get:get,set:function(v){ set(v); draw(); }});
+    dragDelta(wrap,{axis:"x",per:1/7,step:1,min:MIN,max:MAX,get:get,set:function(v){ set(v); draw(); }});
+
+    var vivo=true, reloj=null;
+    function ciclo(){
+      if(!vivo) return;
+      relanzar(svg,"parpadea");
+      reloj=setTimeout(ciclo, 2600+Math.random()*2800);
+    }
+    reloj=setTimeout(ciclo,1400);
+
     draw();
+    setTimeout(function(){ wrap.classList.remove("sin-anim"); },60);
+    return function(){ vivo=false; clearTimeout(reloj); clearTimeout(tPatada); };
   }
 },
 {
@@ -973,20 +1201,68 @@ var Q = [
 },
 {
   id:"trabajo", title:"¿Cuántas horas de trabajo de parto?",
-  sub:"Deslizá. Cero si es cesárea programada.",
+  sub:"Bajá la arena. Cero si es cesárea programada.",
   init:function(){ return 8; },
   label:function(v){ return v===0?"Sin trabajo de parto":(v+(v===1?" hora":" horas")); },
   short:function(v){ return v+" h"; },
   score:function(g,r){ return Math.max(0,Math.round(100*(1-Math.abs(g-r)/12))); },
   build:function(stage,get,set){
-    var bar=el("div","hourbar"), cells=[];
-    for(var h=1;h<=24;h++){
-      var i=el("i"); i.style.height=(26+h*2)+"%"; bar.appendChild(i); cells.push(i);
+    var wrap=el("div","arena");
+    var svg=svgEl("svg",{viewBox:"0 0 172 222"});
+    var FORMA="M34 24 C34 72 78 96 78 110 C78 124 34 148 34 196 L126 196 C126 148 82 124 82 110 C82 96 126 72 126 24 Z";
+    var PISO=196, ALTO_INF=82;
+
+    var defs=svgEl("defs",{});
+    var corte=svgEl("clipPath",{id:"vidrio-arena"});
+    corte.appendChild(svgEl("path",{d:FORMA}));
+    defs.appendChild(corte); svg.appendChild(defs);
+
+    var marco=svgEl("g",{"class":"arena-marco"});
+    marco.appendChild(svgEl("path",{d:FORMA,fill:"rgba(255,253,249,.75)"}));
+    var granos=svgEl("g",{"clip-path":"url(#vidrio-arena)"});
+    var sup=svgEl("rect",{x:30,y:30,width:100,height:78,fill:"#D9B27C","class":"arena-sup"});
+    var chorro=svgEl("line",{x1:80,y1:104,x2:80,y2:PISO,stroke:"#C99A5E","stroke-width":2.4,"class":"arena-chorro"});
+    var inf=svgEl("rect",{x:30,y:PISO-ALTO_INF,width:100,height:ALTO_INF,fill:"#D9B27C","class":"arena-inf"});
+    granos.appendChild(sup); granos.appendChild(chorro); granos.appendChild(inf);
+    marco.appendChild(granos);
+    marco.appendChild(svgEl("path",{d:FORMA,fill:"none",stroke:"rgba(74,59,46,.35)","stroke-width":2}));
+    marco.appendChild(svgEl("path",{d:"M44 34 C44 64 62 84 70 96",fill:"none",stroke:"rgba(255,255,255,.85)","stroke-width":3,"stroke-linecap":"round"}));
+    marco.appendChild(svgEl("rect",{x:18,y:8,width:124,height:16,rx:6,fill:"#B08E68"}));
+    marco.appendChild(svgEl("rect",{x:18,y:196,width:124,height:16,rx:6,fill:"#B08E68"}));
+    marco.appendChild(svgEl("rect",{x:24,y:22,width:6,height:176,rx:3,fill:"#9A7B57"}));
+    marco.appendChild(svgEl("rect",{x:130,y:22,width:6,height:176,rx:3,fill:"#9A7B57"}));
+    svg.appendChild(marco);
+
+    // la escala de horas, quieta aunque el reloj se sacuda
+    [0,6,12,18,24].forEach(function(hh){
+      var y=PISO-hh/24*ALTO_INF;
+      svg.appendChild(svgEl("line",{x1:140,y1:y,x2:146,y2:y,stroke:"rgba(74,59,46,.45)","stroke-width":1.4}));
+      var t=svgEl("text",{x:150,y:y+3,fill:"rgba(74,59,46,.6)","font-size":9,"font-family":"Space Mono, monospace"});
+      t.textContent=hh+"h"; svg.appendChild(t);
+    });
+
+    wrap.appendChild(svg);
+    stage.appendChild(wrap);
+
+    var ultimo=get(), tSacude=null;
+    function draw(){
+      var hs=get(), f=hs/24;
+      sup.style.transform="scaleY("+(1-f)+")";
+      inf.style.transform="scaleY("+f+")";
+      chorro.setAttribute("y2",String(PISO-f*ALTO_INF));
+      chorro.style.opacity=(hs>0 && hs<24)?"1":"0";
+      if(hs!==ultimo){
+        ultimo=hs;
+        if(!svg.classList.contains("sacude")){
+          relanzar(svg,"sacude");
+          clearTimeout(tSacude);
+          tSacude=setTimeout(function(){ svg.classList.remove("sacude"); },440);
+        }
+      }
     }
-    stage.appendChild(bar);
-    function draw(){ cells.forEach(function(c,i){ c.classList.toggle("on", i<get()); }); }
-    dragTrack(bar,{min:0,max:24,step:1,set:function(v){ set(v); draw(); }});
+    dragDelta(wrap,{axis:"y",per:-1/7,step:1,min:0,max:24,get:get,set:function(v){ set(v); draw(); }});
     draw();
+    return function(){ clearTimeout(tSacude); };
   }
 },
 {
@@ -1115,7 +1391,7 @@ var idx=0, tempVal=null, card=$("card");
 // tarjeta: el aire alrededor del widget, y los que se resuelven tocando, dejan
 // pasar el gesto. Si frenara el escenario entero, para agarrar la tarjeta
 // quedaria una franja finita arriba y otra abajo.
-var ARRASTRABLES=".clock,.ruler,.tape,.foot,.hourbar";
+var ARRASTRABLES=".clock,.balanza,.medidor,.foot,.arena";
 
 function renderDots(){
   var dots=$("dots"); dots.innerHTML="";
@@ -1129,7 +1405,14 @@ function renderDots(){
   $("deckCount").textContent = (idx<Q.length ? (idx+1) : Q.length)+"/"+Q.length;
 }
 
+// Algunos juegos dejan relojes andando (parpadeos) o escuchan el dedo en toda
+// la pagina; cada build() puede devolver como apagarse. El de la hora ademas
+// pinta la tarjeta: eso se borra aca para que la siguiente arranque limpia.
+var limpiarCarta=null;
 function renderCard(i){
+  if(limpiarCarta){ try{ limpiarCarta(); }catch(_){} limpiarCarta=null; }
+  card.style.background=""; card.style.borderColor="";
+  ["--tinta","--tinta-2","--camel-osc"].forEach(function(v){ card.style.removeProperty(v); });
   idx=i;
   card.innerHTML="";
   var a=answers();
@@ -1164,7 +1447,7 @@ function renderCard(i){
   card.appendChild(foot);
 
   function paint(){ ro.textContent=q.label(tempVal); }
-  q.build(stage, function(){ return tempVal; }, function(v){
+  limpiarCarta = q.build(stage, function(){ return tempVal; }, function(v){
     tempVal=v; paint();
     a[q.id]=v; st.classList.add("on");
     if(deckMode==="apuesta") lsSet(LS_DRAFT,me);
