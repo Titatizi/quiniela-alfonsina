@@ -824,17 +824,32 @@ var Q = [
 
     var DIA=hexRgb("#FFFDF9"), NOCHE_ARR=hexRgb("#1D2140"), NOCHE_ABA=hexRgb("#3B3459"),
         ALBA_ARR=hexRgb("#9C86B4"), ALBA_ABA=hexRgb("#F3AE8E");
-    var TINTA=[hexRgb("#4A3B2E"),hexRgb("#F6EEE6")], TINTA2=[hexRgb("#8B7A66"),hexRgb("#C7BFD8")],
-        CAMEL=[hexRgb("#9A7B57"),hexRgb("#F1C98A")];
+    // El texto no se mezcla en gris: sobre cada zona del cielo se elige el
+    // juego de colores (oscuro o claro) con mas contraste. Mezclado, a mitad
+    // del amanecer quedaba gris medio sobre lavanda y durazno.
+    var OSCURO=hexRgb("#2F251C"), CLARO=hexRgb("#FFF8EF");
+    function luz(c){
+      var l=c.map(function(v){ v/=255; return v<=0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055,2.4); });
+      return 0.2126*l[0]+0.7152*l[1]+0.0722*l[2];
+    }
+    function contraste(a,b){ var x=luz(a), y=luz(b); return (Math.max(x,y)+.05)/(Math.min(x,y)+.05); }
+    function claroSobre(fondo){ return contraste(CLARO,fondo)>contraste(OSCURO,fondo); }
     function pintarCielo(m){
       var d=oscuridad(m), g=resplandor(m);
       var arriba=mix(mix(DIA,NOCHE_ARR,d),ALBA_ARR,g*.5);
       var abajo =mix(mix(DIA,NOCHE_ABA,d),ALBA_ABA,g*.75);
       tarjeta.style.background="linear-gradient(180deg,"+rgb(arriba)+","+rgb(abajo)+")";
       tarjeta.style.borderColor = d>.5 ? "rgba(255,248,239,.16)" : "";
-      tarjeta.style.setProperty("--tinta",rgb(mix(TINTA[0],TINTA[1],d)));
-      tarjeta.style.setProperty("--tinta-2",rgb(mix(TINTA2[0],TINTA2[1],d)));
-      tarjeta.style.setProperty("--camel-osc",rgb(mix(CAMEL[0],CAMEL[1],d)));
+      if(d===0 && g===0){
+        // pleno dia: los colores de siempre
+        ["--tinta","--tinta-2","--camel-osc"].forEach(function(v){ tarjeta.style.removeProperty(v); });
+      }else{
+        // el titulo esta sobre el cielo de arriba; el resultado, sobre el de abajo
+        var arribaClaro=claroSobre(arriba), abajoClaro=claroSobre(abajo);
+        tarjeta.style.setProperty("--tinta",     arribaClaro ? "#FFF8EF" : "#2F251C");
+        tarjeta.style.setProperty("--tinta-2",   arribaClaro ? "#E4DCEE" : "#4E3F33");
+        tarjeta.style.setProperty("--camel-osc", abajoClaro  ? "#F6D9A6" : "#6E4F31");
+      }
       cielo.style.opacity=String(clamp((d-.45)/.55,0,1));
       return d;
     }
