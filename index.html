@@ -321,6 +321,26 @@ textarea{font-family:var(--mono);font-size:13px;line-height:1.7;resize:vertical}
   border-top-color:var(--tinta);animation:spin .7s linear infinite;display:inline-block;vertical-align:-3px}
 @keyframes spin{to{transform:rotate(360deg)}}
 
+/* ---------- lista de personas ---------- */
+.lista{display:flex;flex-direction:column;background:var(--papel);border:1px solid var(--linea);
+  border-radius:var(--r-m);overflow:hidden;box-shadow:0 8px 20px -16px rgba(74,59,46,.5)}
+.persona{display:flex;align-items:center;gap:12px;padding:12px 14px;width:100%;
+  border:0;border-bottom:1px solid var(--linea);background:transparent;text-align:left}
+.persona:last-child{border-bottom:0}
+.persona:active{background:var(--fondo-2)}
+.persona .av{width:36px;height:36px;flex:0 0 36px;border-radius:50%;display:grid;place-items:center;
+  background:var(--fondo-2);font-family:var(--display);font-weight:600;font-size:15px;color:var(--camel-osc)}
+.persona.yo .av{background:var(--rosa);color:#5A4234}
+.persona .who{flex:1;min-width:0}
+.persona .who b{display:block;font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.persona .who small{color:var(--tinta-2);font-size:12.5px}
+.persona .peek{font-family:var(--mono);font-size:11.5px;color:var(--camel-osc);text-align:right;white-space:nowrap}
+.persona .chev{color:var(--tinta-2);font-size:20px;line-height:1}
+.vos{font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--terracota);margin-left:7px}
+button.pod{width:100%;text-align:left;cursor:pointer}
+button.pod:active{transform:scale(.985)}
+.tk-real{display:block;font-family:var(--mono);font-size:10.5px;color:rgba(255,248,239,.66);margin-top:2px}
+
 .conf{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden}
 .conf i{position:absolute;width:9px;height:14px;border-radius:2px;animation:fall 1.5s cubic-bezier(.2,.6,.5,1) forwards}
 @keyframes fall{0%{opacity:1;transform:translate3d(0,0,0) rotate(0)}
@@ -400,7 +420,8 @@ textarea{font-family:var(--mono);font-size:13px;line-height:1.7;resize:vertical}
   </div>
   <div style="display:flex;flex-direction:column;gap:10px">
     <button class="btn btn-gold" id="btnVerBoleta">Ver mi boleta</button>
-    <button class="btn btn-ghost" id="btnShare">Invitar a alguien más</button>
+    <button class="btn btn-ghost" id="btnTodos">Ver las apuestas de todos</button>
+    <button class="backlink" id="btnShare" style="align-self:center">Invitar a alguien más</button>
   </div>
 </section>
 
@@ -408,7 +429,7 @@ textarea{font-family:var(--mono);font-size:13px;line-height:1.7;resize:vertical}
 <section class="screen" id="s-boleta" hidden>
   <div class="topbar">
     <button class="backlink" id="btnBoletaBack">← Volver</button>
-    <span class="eyebrow">Tu boleta</span>
+    <span class="eyebrow" id="boletaEtiqueta">Tu boleta</span>
   </div>
 
   <div class="tk">
@@ -421,11 +442,24 @@ textarea{font-family:var(--mono);font-size:13px;line-height:1.7;resize:vertical}
     <div class="tk-body" id="tkBody"></div>
     <div class="tk-foot">
       <span id="tkSerial"></span>
-      <span><b id="tkTotal"></b> puntos en juego</span>
+      <span><b id="tkTotal"></b><span id="tkTotalTxt"> puntos en juego</span></span>
     </div>
   </div>
 
   <button class="btn btn-ghost" id="btnPuntaje">Cómo se puntúa</button>
+</section>
+
+<!-- ============ APUESTAS DE TODOS ============ -->
+<section class="screen" id="s-todos" hidden>
+  <div class="topbar">
+    <button class="backlink" id="btnTodosBack">← Volver</button>
+    <span class="eyebrow">Apuestas</span>
+  </div>
+  <div>
+    <h2 class="card-title" style="font-size:clamp(26px,7.4vw,34px)">Lo que apostó cada uno</h2>
+    <p class="lede" style="margin-top:6px" id="todosSub"></p>
+  </div>
+  <div id="todosLista"></div>
 </section>
 
 <!-- ============ PODIO PÚBLICO ============ -->
@@ -1044,7 +1078,7 @@ function realCompleto(real){
 }
 
 /* ===================== navegación ===================== */
-var SCREENS=["s-boot","s-cover","s-register","s-deck","s-done","s-boleta","s-podio","s-host"];
+var SCREENS=["s-boot","s-cover","s-register","s-deck","s-done","s-boleta","s-todos","s-podio","s-host"];
 function show(id){
   SCREENS.forEach(function(s){ $(s).hidden=(s!==id); });
   window.scrollTo(0,0);
@@ -1293,28 +1327,117 @@ function serie(b){
 }
 function sinSignos(t){ return t.replace(/^¿|\?$/g,""); }
 
-function pintarBoleta(){
+function pintarDone(){
   $("doneTitle").textContent="Listo, "+me.nombre.split(" ")[0];
   $("doneSub").textContent="Tu apuesta quedó guardada.";
+}
 
-  $("tkName").textContent=me.nombre;
-  $("tkRel").textContent=me.parentesco;
-  $("tkSerial").textContent="Boleta Nº "+serie(me);
-  $("tkTotal").textContent=TOTAL_MAX;
+/** La boleta de cualquiera. Con el resultado real, cada renglón muestra lo que
+ *  sacó y cuál fue el dato verdadero; sin él, los 100 que hay en juego. */
+function pintarBoletaDe(b, real, propia){
+  var a=b.a||b.respuestas||{};
+  $("boletaEtiqueta").textContent = propia ? "Tu boleta" : "Boleta";
+  $("tkName").textContent=b.nombre;
+  $("tkRel").textContent=b.parentesco;
+  $("tkSerial").textContent="Boleta Nº "+serie(b);
 
   var body=$("tkBody"); body.innerHTML="";
+  var total=0;
   Q.forEach(function(q){
     var row=el("div","tk-row");
-    row.appendChild(el("span","tk-q",sinSignos(q.title)));
-    row.appendChild(el("span","tk-v", me.a[q.id]!=null ? q.short(me.a[q.id]) : "—"));
-    row.appendChild(el("span","tk-pts","100"));
+    var preg=el("span","tk-q",sinSignos(q.title));
+    var hayReal = !!real && real[q.id]!=null;
+    if(hayReal) preg.appendChild(el("small","tk-real","Real: "+q.short(real[q.id])));
+    row.appendChild(preg);
+    row.appendChild(el("span","tk-v", a[q.id]!=null ? q.short(a[q.id]) : "—"));
+    var pts = (hayReal && a[q.id]!=null) ? Math.round(q.score(a[q.id],real[q.id])) : null;
+    if(pts!=null) total+=pts;
+    row.appendChild(el("span","tk-pts", pts!=null ? String(pts) : "100"));
     body.appendChild(row);
   });
 
+  if(real){
+    $("tkTotal").textContent=total+" de "+TOTAL_MAX;
+    $("tkTotalTxt").textContent=" puntos";
+  }else{
+    $("tkTotal").textContent=TOTAL_MAX;
+    $("tkTotalTxt").textContent=" puntos en juego";
+  }
 }
 
-$("btnVerBoleta").addEventListener("click",function(){ show("s-boleta"); });
-$("btnBoletaBack").addEventListener("click",function(){ show("s-done"); });
+// La pantalla de boleta se usa desde varios lados; "Volver" lleva a donde se vino.
+var volverDeBoleta="s-done";
+function abrirBoleta(b, real, propia, volver){
+  pintarBoletaDe(b, real, propia);
+  volverDeBoleta=volver;
+  show("s-boleta");
+}
+
+function pintarBoleta(){
+  pintarDone();
+  pintarBoletaDe(me, null, true);
+  volverDeBoleta="s-done";
+}
+
+$("btnVerBoleta").addEventListener("click",function(){ abrirBoleta(me,null,true,"s-done"); });
+$("btnBoletaBack").addEventListener("click",function(){ show(volverDeBoleta); });
+
+/* ---------- apuestas de todos ---------- */
+function esYo(b){
+  return !!me.nombre &&
+    b.nombre.trim().toLowerCase()===me.nombre.trim().toLowerCase() &&
+    b.parentesco.trim().toLowerCase()===me.parentesco.trim().toLowerCase();
+}
+function dcorta(iso){ var p=iso.split("-"); return Number(p[2])+" "+MESES[Number(p[1])-1].slice(0,3); }
+function vistazo(a){
+  var partes=[];
+  if(a.fecha) partes.push(dcorta(a.fecha));
+  if(a.peso!=null) partes.push((a.peso/1000).toFixed(1).replace(".",",")+" kg");
+  return partes.join(" · ");
+}
+function filaPersona(b, avatar, derecha){
+  var yo=esYo(b);
+  var f=el("button","persona"+(yo?" yo":"")); f.type="button";
+  f.appendChild(el("span","av",avatar));
+  var who=el("div","who");
+  var nom=el("b","",b.nombre);
+  if(yo) nom.appendChild(el("span","vos","vos"));
+  who.appendChild(nom);
+  who.appendChild(el("small","",b.parentesco));
+  f.appendChild(who);
+  if(derecha) f.appendChild(el("span","peek",derecha));
+  f.appendChild(el("span","chev","›"));
+  return f;
+}
+
+function abrirTodas(){
+  show("s-todos");
+  $("todosSub").textContent="Cargando…";
+  $("todosLista").innerHTML="";
+  api({ op:"todas", nombre:me.nombre, parentesco:me.parentesco, secreto:me.secreto })
+    .then(function(j){
+      // Si mientras tanto se publicó el podio, la lista pasa a ser el ranking.
+      if(j.publicado){ mostrarPodioPublico(j.apuestas, j.real); return; }
+      pintarTodas(j.apuestas);
+    })
+    .catch(function(e){ $("todosSub").textContent=e.message; });
+}
+function pintarTodas(lista){
+  var n=lista.length;
+  $("todosSub").textContent = n<=1
+    ? "Por ahora sos la única persona que apostó."
+    : n+" personas apostaron. Tocá a cualquiera para ver su boleta.";
+  var ordenada=lista.slice().sort(function(x,y){ return x.nombre.localeCompare(y.nombre,"es"); });
+  var box=el("div","lista");
+  ordenada.forEach(function(b){
+    var f=filaPersona(b, b.nombre.trim().charAt(0).toUpperCase(), vistazo(b.respuestas||{}));
+    f.addEventListener("click",function(){ abrirBoleta(b,null,esYo(b),"s-todos"); });
+    box.appendChild(f);
+  });
+  $("todosLista").appendChild(box);
+}
+$("btnTodos").addEventListener("click",abrirTodas);
+$("btnTodosBack").addEventListener("click",function(){ show("s-done"); });
 
 /* ---------- panel de puntaje ---------- */
 (function(){
@@ -1352,44 +1475,57 @@ $("btnShare").addEventListener("click",function(){
 });
 
 /* ===================== podio público ===================== */
-function pintarPodio(wrap, podio, real, subEl){
+function ranking(apuestas, real){
+  return apuestas.map(function(b){
+    return { nombre:b.nombre, parentesco:b.parentesco, respuestas:b.respuestas, puntos:scoreBet(b.respuestas,real) };
+  }).sort(function(x,y){ return y.puntos-x.puntos; });
+}
+
+function mostrarPodioPublico(apuestas, real){
+  pintarPodio($("podioWrap"), ranking(apuestas,real), real, $("podioSub"), "s-podio");
+  show("s-podio");
+  setTimeout(function(){ confetti(40); },500);
+}
+
+function pintarPodio(wrap, podio, real, subEl, volver){
   wrap.innerHTML="";
   if(!podio || !podio.length){
     wrap.appendChild(el("div","empty","Todavía no hay apuestas cargadas."));
     return;
   }
-  if(subEl) subEl.textContent = podio.length+" apostaron · el máximo posible eran "+TOTAL_MAX+" puntos.";
+  if(subEl) subEl.textContent = podio.length+" apostaron. Tocá a cualquiera para ver sus puntos.";
+
   var pod=el("div","podium"), medals=["🥇","🥈","🥉"];
   podio.slice(0,3).forEach(function(r,i){
-    var d=el("div","pod p"+(i+1));
+    var d=el("button","pod p"+(i+1)); d.type="button";
     d.appendChild(el("span","medal",medals[i]));
     var who=el("div","who");
-    who.appendChild(el("b","",r.nombre)); who.appendChild(el("small","",r.parentesco));
+    var nom=el("b","",r.nombre);
+    if(esYo(r)) nom.appendChild(el("span","vos","vos"));
+    who.appendChild(nom); who.appendChild(el("small","",r.parentesco));
     d.appendChild(who);
     d.appendChild(el("span","pts",String(r.puntos)));
+    d.addEventListener("click",function(){ abrirBoleta(r,real,esYo(r),volver); });
     pod.appendChild(d);
   });
   wrap.appendChild(pod);
 
   if(podio.length>3){
-    var rest=el("div","card-box"); rest.style.cssText="padding:4px 2px;margin-top:12px";
+    var box=el("div","lista"); box.style.marginTop="12px";
     podio.slice(3).forEach(function(r,i){
-      var row=el("div","rank");
-      row.appendChild(el("span","n",String(i+4)));
-      var who=el("div","who");
-      who.appendChild(el("b","",r.nombre)); who.appendChild(el("small","",r.parentesco));
-      row.appendChild(who);
-      row.appendChild(el("span","pts",String(r.puntos)));
-      rest.appendChild(row);
+      var f=filaPersona(r, String(i+4), r.puntos+" pts");
+      f.addEventListener("click",function(){ abrirBoleta(r,real,esYo(r),volver); });
+      box.appendChild(f);
     });
-    wrap.appendChild(rest);
+    wrap.appendChild(box);
   }
+
   if(real){
     var t=el("div","ticket"); t.style.marginTop="16px";
     t.appendChild(el("p","eyebrow","Cómo fue en realidad"));
     var dl=el("dl");
     Q.forEach(function(q){
-      dl.appendChild(el("dt","",q.title.replace(/^¿|\?$/g,"")));
+      dl.appendChild(el("dt","",sinSignos(q.title)));
       dl.appendChild(el("dd","", real[q.id]!=null ? q.short(real[q.id]) : "—"));
     });
     t.appendChild(dl);
@@ -1443,6 +1579,10 @@ function pintarBetsHost(){
     row.appendChild(el("span","n",String(i+1)));
     var who=el("div","who");
     who.appendChild(el("b","",b.nombre)); who.appendChild(el("small","",b.parentesco));
+    who.style.cursor="pointer";
+    who.addEventListener("click",function(){
+      abrirBoleta(b, realCompleto(estado.real)?estado.real:null, false, "s-host");
+    });
     row.appendChild(who);
     var del=el("button","backlink","Borrar");
     del.type="button"; del.style.color="var(--terracota)";
@@ -1536,11 +1676,7 @@ function pintarTopHost(){
     wrap.appendChild(el("div","empty","Nadie apostó todavía."));
     return;
   }
-  var podio=hostBets.map(function(b){
-    return { nombre:b.nombre, parentesco:b.parentesco, puntos:scoreBet(b.respuestas,estado.real) };
-  }).sort(function(x,y){ return y.puntos-x.puntos; });
-
-  pintarPodio(wrap, podio, estado.real, $("topSub"));
+  pintarPodio(wrap, ranking(hostBets,estado.real), estado.real, $("topSub"), "s-host");
 
   var pub=el("button","btn"+(estado.publicado?" btn-ghost":""),
     estado.publicado ? "Ocultar el podio a los invitados" : "Publicar el podio para todos");
@@ -1615,12 +1751,10 @@ function boot(){
       estado.real=j.real||null;
 
       if(estado.publicado && j.apuestas){
-        var podio=j.apuestas.map(function(b){
-          return { nombre:b.nombre, parentesco:b.parentesco, puntos:scoreBet(b.respuestas,j.real) };
-        }).sort(function(x,y){ return y.puntos-x.puntos; });
-        pintarPodio($("podioWrap"), podio, j.real, $("podioSub"));
-        show("s-podio");
-        setTimeout(function(){ confetti(40); },500);
+        // Si esta persona aposto, la marcamos como "vos" en el ranking.
+        var guardada=lsGet(LS_MINE);
+        if(guardada && guardada.nombre) me=guardada;
+        mostrarPodioPublico(j.apuestas, j.real);
         return;
       }
 
